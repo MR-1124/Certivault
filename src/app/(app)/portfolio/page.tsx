@@ -89,7 +89,7 @@ export default function DeveloperHubPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://certvault.com";
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://certivault-puce.vercel.app";
   const publicEndpointUrl = `${origin}/api/v1/vault/${slug || "your-slug"}`;
   const authEndpointUrl = `${origin}/api/v1/certificates`;
 
