@@ -84,7 +84,7 @@ export default async function Home() {
       <section className="py-24 bg-card border-t-2 border-border text-center px-4">
         <div className="max-w-4xl mx-auto">
           <p className="font-serif italic text-4xl md:text-5xl text-foreground leading-snug">
-            "Your credentials are the currency of your competence. Do not scatter them across forgotten logins. Collect, verify, and show them off in a single, brutalist showcase."
+            "Your credentials are the currency of your competence. Do not scatter them across forgotten logins. Collect, verify, and expose them from a single, unified developer API."
           </p>
           <div className="mt-8 text-xs font-bold tracking-widest uppercase text-muted-foreground">
             — THE CERTVAULT MANIFESTO
