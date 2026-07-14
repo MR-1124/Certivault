@@ -88,20 +88,10 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Unsupported file type. Only PDF and images are allowed." }, { status: 400 });
       }
 
-      // 3. Sanitize filename to prevent path traversal / directory injections
-      const originalName = file.name || "certificate";
-      const cleanName = originalName.replace(/[^a-zA-Z0-9.-]/g, "_");
-
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      const fileName = `${Date.now()}-${cleanName}`;
-      const filePath = path.join(uploadDir, fileName);
-      fs.writeFileSync(filePath, buffer);
-      fileUrl = `/uploads/${fileName}`;
+      const base64 = buffer.toString('base64');
+      fileUrl = `data:${file.type};base64,${base64}`;
     }
 
     const certificate = await prisma.certificate.create({

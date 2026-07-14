@@ -29,9 +29,14 @@ export default async function CertificateDetailsPage({
   let isPdf = false;
   let isImage = false;
   if (cert.fileUrl) {
-    const lowerUrl = cert.fileUrl.toLowerCase();
-    isPdf = lowerUrl.endsWith(".pdf");
-    isImage = lowerUrl.endsWith(".png") || lowerUrl.endsWith(".jpg") || lowerUrl.endsWith(".jpeg") || lowerUrl.endsWith(".webp") || lowerUrl.endsWith(".gif");
+    if (cert.fileUrl.startsWith("data:")) {
+      isPdf = cert.fileUrl.startsWith("data:application/pdf");
+      isImage = cert.fileUrl.startsWith("data:image/");
+    } else {
+      const lowerUrl = cert.fileUrl.toLowerCase();
+      isPdf = lowerUrl.endsWith(".pdf");
+      isImage = lowerUrl.endsWith(".png") || lowerUrl.endsWith(".jpg") || lowerUrl.endsWith(".jpeg") || lowerUrl.endsWith(".webp") || lowerUrl.endsWith(".gif");
+    }
   }
 
   const details = {
