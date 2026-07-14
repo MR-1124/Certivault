@@ -34,7 +34,7 @@ export function proxy(request: NextRequest) {
   // Custom Content Security Policy supporting inline fonts/styles and extension helpers
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://*.perplexity.ai; img-src 'self' data: blob:; font-src 'self' data: https://*.perplexity.ai; connect-src 'self' https://*.perplexity.ai; frame-src 'self' blob:; object-src 'none';"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://*.perplexity.ai; img-src 'self' data: blob:; font-src 'self' data: https://*.perplexity.ai; connect-src 'self' https://*.perplexity.ai https://*.typeform.com; frame-src 'self' blob: https://*.typeform.com; object-src 'none';"
   );
 
   // 2. API Rate Limiting for edge nodes
