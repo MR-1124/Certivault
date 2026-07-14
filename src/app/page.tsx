@@ -124,6 +124,7 @@ export default async function Home() {
             <Link href="/privacy" className="text-xs font-bold tracking-wider uppercase hover:text-accent transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="text-xs font-bold tracking-wider uppercase hover:text-accent transition-colors">Terms of Service</Link>
             <Link href="/changelog" className="text-xs font-bold tracking-wider uppercase hover:text-accent transition-colors">Changelog</Link>
+            <Link href="/feedback" className="text-xs font-bold tracking-wider uppercase hover:text-accent transition-colors">Feedback</Link>
           </div>
         </div>
       </footer>

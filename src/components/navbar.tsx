@@ -31,6 +31,7 @@ export function Navbar() {
                 { href: "/dashboard", label: "DASHBOARD" },
                 { href: "/certificates", label: "CERTIFICATES" },
                 { href: "/portfolio", label: "DEVELOPER API" },
+                { href: "/feedback", label: "FEEDBACK" },
               ].map(({ href, label }) => (
                 <Link key={href} href={href}>
                   <button className="text-xs font-bold tracking-widest px-4 py-2 border-2 border-transparent hover:border-border transition-colors uppercase cursor-pointer">
