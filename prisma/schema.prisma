@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  passwordHash   String
+  apiKey         String?   @unique
+  createdAt      DateTime  @default(now())
+  certificates   Certificate[]
+  portfolio      PortfolioSetting?
+}
+
+model Certificate {
+  id             String    @id @default(cuid())
+  title          String
+  issuer         String
+  issueDate      DateTime
+  expirationDate DateTime?
+  credentialId   String?
+  credentialUrl  String?
+  category       String?
+  description    String?
+  verified       Boolean   @default(false)
+  fileUrl        String?
+  isPublic       Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tags           Tag[]
+}
+
+model Tag {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  certificates Certificate[]
+}
+
+model PortfolioSetting {
+  id         String   @id @default(cuid())
+  isPublic   Boolean  @default(false)
+  customSlug String?  @unique
+  theme      String   @default("light")
+  
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Changelog {
+  id         String   @id @default(cuid())
+  version    String
+  date       DateTime @default(now())
+  category   String
+  summary    String
+  notes      String?
+}

@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CertVault — Personal Credentials Hub & API Showcase
 
-## Getting Started
+A secure, high-contrast, brutalist platform to consolidate, verify, and expose your professional achievements to custom external web portfolios. Built for developers who document their journey.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Key Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 1. Unified Certificate Dashboard
+- **Consolidated Records**: Keep track of all certificates, issuers, issue dates, and expiry tracking in one central location.
+- **Verification Links**: Store verification verification links directly on your metadata cards.
+- **Document Previews**: Upload PDF copies or images of certificates for quick split-screen viewing.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 2. Developer API Integration Hub
+- **Private Access Tokens**: Generate secure cryptographic keys (`cv_...`) to programmatically fetch your entire credential library in JSON format.
+- **Public API Feed**: Enable a public endpoint for a specific custom slug (`/api/v1/vault/your-name`) to fetch only public certificates directly from frontend portfolio apps (e.g. Next.js, React, or static Jekyll sites).
+- **Interactive Code Blocks**: Copy exact syntax templates for **cURL**, **JavaScript Fetch**, and **Python Requests** directly from the settings page.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Fortified Security
+- **IP Rate Limiting**: Next.js Edge limits rate flooding (max 100 requests per minute) on public endpoints.
+- **Hashed Credentials**: API access tokens are hashed via `SHA-256` before storing to protect against database leaks.
+- **MIME & Size Restrictions**: Uploaded documents are restricted to PDF and standard images, constrained under `4.5MB` to comply with serverless execution boundaries.
+- **HTTP Hardening**: Strict Content Security Policy (CSP), X-Frame-Options (Clickjacking defense), and HSTS forced on all response flows.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## How to Use CertVault
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 1. Adding Credentials
+1. Go to **Certificates** and click **Add Certificate**.
+2. Enter the credential details (Title, Issuer, Dates, Verification URL).
+3. Select a PDF or image of your certificate.
+4. Toggle "Allow this certificate to be queried via the Public JSON API" if you want it visible on your external public feed.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 2. Integrating into your Personal Website
+1. Go to **Developer API**.
+2. Click **Generate Developer API Key** (Make sure to copy the key immediately as it will be masked on subsequent views).
+3. If using a frontend JS framework, turn on the **Public Portfolio Endpoint**, type your slug, and copy the public JSON endpoint url.
+4. Use the provided Fetch/cURL code snippets in your portfolio code to render your credentials dynamically!
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+Proprietary Software. Copyright (c) 2026 MR-1124. All Rights Reserved. Refer to the LICENSE file for details.
