@@ -31,10 +31,10 @@ export function proxy(request: NextRequest) {
     "max-age=31536000; includeSubDomains; preload"
   );
   
-  // Custom Content Security Policy supporting inline fonts/styles
+  // Custom Content Security Policy supporting inline fonts/styles and extension helpers
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-src 'self' blob:; object-src 'none';"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://*.perplexity.ai; img-src 'self' data: blob:; font-src 'self' data: https://*.perplexity.ai; connect-src 'self' https://*.perplexity.ai; frame-src 'self' blob:; object-src 'none';"
   );
 
   // 2. API Rate Limiting for edge nodes

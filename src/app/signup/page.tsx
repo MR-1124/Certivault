@@ -22,7 +22,7 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    const res = await fetch("/api/auth/register", {
+    const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
@@ -31,8 +31,16 @@ export default function SignupPage() {
     if (res.ok) {
       router.push("/login?registered=true");
     } else {
-      const data = await res.json();
-      setError(data.error || "Registration failed");
+      let errorMessage = "Registration failed";
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
+        errorMessage = data.message || data.error || errorMessage;
+      } else {
+        const text = await res.text();
+        errorMessage = text || errorMessage;
+      }
+      setError(errorMessage);
       setLoading(false);
     }
   }
