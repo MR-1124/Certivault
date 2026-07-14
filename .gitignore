@@ -56,3 +56,6 @@ test.js
 
 # Local seed archives
 /changelogs-archive/
+
+# Profile README
+/PROFILE_README.md
