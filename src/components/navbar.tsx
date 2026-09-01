@@ -31,7 +31,7 @@ export function Navbar() {
               CertVault
             </span>
             <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60">
-              v2.1
+              v3.1
             </span>
           </div>
         </Link>
