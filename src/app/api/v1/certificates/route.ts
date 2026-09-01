@@ -5,6 +5,8 @@ import crypto from "crypto";
 export async function GET(request: NextRequest) {
   try {
     const apiKey = request.headers.get("X-CertVault-API-Key");
+    const referrer = request.headers.get("referer") || request.headers.get("origin") || "Direct Server Request";
+    const userAgent = request.headers.get("user-agent") || "API Client";
 
     if (!apiKey) {
       return NextResponse.json(
@@ -15,8 +17,7 @@ export async function GET(request: NextRequest) {
 
     const keyHash = crypto.createHash("sha256").update(apiKey).digest("hex");
 
-    // Bypass strict TS compiler type checking since prisma client regenerator was locked on windows
-    const user = await (prisma.user as any).findUnique({
+    const user = await prisma.user.findUnique({
       where: { apiKey: keyHash },
       select: {
         id: true,
@@ -45,6 +46,17 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    // Log request asynchronously
+    prisma.apiLog.create({
+      data: {
+        userId: user.id,
+        endpoint: "/api/v1/certificates",
+        referrer,
+        userAgent,
+        statusCode: 200,
+      },
+    }).catch(() => {});
 
     return NextResponse.json({
       success: true,

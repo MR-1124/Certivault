@@ -9,14 +9,16 @@ datasource db {
 }
 
 model User {
-  id             String    @id @default(cuid())
+  id             String         @id @default(cuid())
   name           String?
-  email          String    @unique
+  email          String         @unique
   passwordHash   String
-  apiKey         String?   @unique
-  createdAt      DateTime  @default(now())
+  apiKey         String?        @unique
+  createdAt      DateTime       @default(now())
   certificates   Certificate[]
   portfolio      PortfolioSetting?
+  webhookConfig  WebhookConfig?
+  apiLogs        ApiLog[]
 }
 
 model Certificate {
@@ -47,13 +49,45 @@ model Tag {
 }
 
 model PortfolioSetting {
-  id         String   @id @default(cuid())
-  isPublic   Boolean  @default(false)
-  customSlug String?  @unique
-  theme      String   @default("light")
+  id          String   @id @default(cuid())
+  isPublic    Boolean  @default(false)
+  customSlug  String?  @unique
+  theme       String   @default("light")
+  headline    String?
+  bio         String?
+  avatarUrl   String?
+  socialLinks String?  // JSON string: { github, linkedin, twitter, website }
   
-  userId     String   @unique
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ApiLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  endpoint   String
+  slug       String?
+  referrer   String?
+  userAgent  String?
+  statusCode Int      @default(200)
+  createdAt  DateTime @default(now())
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([slug, createdAt])
+}
+
+model WebhookConfig {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  url       String
+  secret    String?
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Changelog {
