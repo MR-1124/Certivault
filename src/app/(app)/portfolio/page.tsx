@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Key, Eye, EyeOff, Copy, RefreshCw, FileCode, Check } from "lucide-react";
+import { Key, Eye, EyeOff, Copy, RefreshCw, Code2, Check, ShieldCheck, Globe, Terminal, Sparkles, AlertCircle } from "lucide-react";
 
 export default function DeveloperHubPage() {
   const [slug, setSlug] = useState("");
@@ -16,10 +15,11 @@ export default function DeveloperHubPage() {
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [keyLoading, setKeyLoading] = useState(false);
   
-  const [settingsMessage, setSettingsMessage] = useState("");
+  const [settingsMessage, setSettingsMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
-  const [activeTab, setActiveTab] = useState("curl");
+  const [copiedSnippet, setCopiedSnippet] = useState(false);
+  const [activeTab, setActiveTab] = useState<"curl" | "javascript" | "python" | "public">("curl");
 
   useEffect(() => {
     // Fetch settings
@@ -43,19 +43,23 @@ export default function DeveloperHubPage() {
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSettingsLoading(true);
-    setSettingsMessage("");
+    setSettingsMessage(null);
 
-    const res = await fetch("/api/portfolio", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customSlug: slug, isPublic }),
-    });
+    try {
+      const res = await fetch("/api/portfolio", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customSlug: slug.trim(), isPublic }),
+      });
 
-    if (res.ok) {
-      setSettingsMessage("Public endpoint settings updated.");
-    } else {
-      const data = await res.json();
-      setSettingsMessage(data.error || "Failed to update settings.");
+      if (res.ok) {
+        setSettingsMessage({ type: "success", text: "Portfolio feed settings saved successfully." });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setSettingsMessage({ type: "error", text: data.error || "Failed to update settings." });
+      }
+    } catch {
+      setSettingsMessage({ type: "error", text: "Network error occurred." });
     }
     setSettingsLoading(false);
   };
@@ -72,7 +76,7 @@ export default function DeveloperHubPage() {
   };
 
   const handleRevokeKey = async () => {
-    if (!confirm("Revoking the key will instantly break integrations using it. Continue?")) return;
+    if (!confirm("Revoking your API key will immediately invalidate all external apps using it. Continue?")) return;
     setKeyLoading(true);
     const res = await fetch("/api/developer/key", { method: "DELETE" });
     const data = await res.json();
@@ -83,10 +87,10 @@ export default function DeveloperHubPage() {
     setKeyLoading(false);
   };
 
-  const copyToClipboard = (text: string, setCopied: (v: boolean) => void) => {
+  const copyToClipboard = (text: string, callback: (v: boolean) => void) => {
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    callback(true);
+    setTimeout(() => callback(false), 2000);
   };
 
   const origin = typeof window !== "undefined" ? window.location.origin : "https://certivault-puce.vercel.app";
@@ -94,230 +98,298 @@ export default function DeveloperHubPage() {
   const authEndpointUrl = `${origin}/api/v1/certificates`;
 
   const docSnippets = {
-    curl: `curl -H "X-CertVault-API-Key: ${apiKey || "YOUR_API_KEY"}" \\\n     -X GET \\\n     "${authEndpointUrl}"`,
-    javascript: `fetch("${authEndpointUrl}", {\n  headers: {\n    "X-CertVault-API-Key": "${apiKey || "YOUR_API_KEY"}"\n  }\n})\n.then(res => res.json())\n.then(data => console.log(data.certificates));`,
-    python: `import requests\n\nurl = "${authEndpointUrl}"\nheaders = {\n    "X-CertVault-API-Key": "${apiKey || "YOUR_API_KEY"}"\n}\n\nresponse = requests.get(url, headers=headers)\ncertificates = response.json().get("certificates")\nprint(certificates)`,
-    public: `// Query public certificates directly (No authentication header required)\nfetch("${publicEndpointUrl}")\n.then(res => res.json())\n.then(data => console.log(data.certificates));`,
+    curl: `curl -X GET "${authEndpointUrl}" \\\n     -H "X-CertVault-API-Key: ${apiKey || "cv_YOUR_API_TOKEN"}"`,
+    javascript: `// Fetch private credentials using JavaScript Fetch API\nconst response = await fetch("${authEndpointUrl}", {\n  headers: {\n    "X-CertVault-API-Key": "${apiKey || "cv_YOUR_API_TOKEN"}"\n  }\n});\n\nconst data = await response.json();\nconsole.log(data.certificates);`,
+    python: `# Fetch credentials using Python requests\nimport requests\n\nurl = "${authEndpointUrl}"\nheaders = {\n    "X-CertVault-API-Key": "${apiKey || "cv_YOUR_API_TOKEN"}"\n}\n\nresponse = requests.get(url, headers=headers)\ncertificates = response.json().get("certificates", [])\nfor cert in certificates:\n    print(f"{cert['title']} - {cert['issuer']}")`,
+    public: `// Query public certificates directly (Zero authentication header required)\nconst response = await fetch("${publicEndpointUrl}");\nconst data = await response.json();\nconsole.log(data.certificates);`,
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in-up">
+    <div className="space-y-8 animate-fade-in-up">
       
-      {/* Settings Column */}
-      <div className="lg:col-span-5 space-y-6">
-        
-        {/* API Key Panel */}
-        <div className="bg-card border-2 border-border p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(242,239,233,1)]">
-          <p className="text-xs font-bold uppercase tracking-widest text-accent mb-2">SECURITY Node</p>
-          <h2 className="text-2xl font-black uppercase tracking-tight mb-4 flex items-center gap-2">
-            <Key className="w-5 h-5 text-foreground" /> API Credentials
-          </h2>
-          <p className="text-xs text-muted-foreground leading-relaxed font-semibold mb-6">
-            Generate a private access token to securely request your vault details. Keep this key safe.
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200/80 dark:border-slate-800 pb-6">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+              Developer API & Feed
+            </h1>
+            <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+              REST v1
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+            Programmatic access to your credential library for custom portfolios, resumes, and client apps
           </p>
+        </div>
 
-          <div className="space-y-4">
+        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Edge Rate Limiter: 100 req/min</span>
+        </div>
+      </div>
+
+      {/* Grid: Credentials & Slug Settings (5 cols) vs Code Playground (7 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* Left Column: API Configuration (5 cols) */}
+        <div className="lg:col-span-5 space-y-6">
+          
+          {/* API Key Panel */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-2xs space-y-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-200 dark:border-blue-800">
+                  <Key className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                    Private API Token
+                  </h2>
+                  <p className="text-[11px] text-slate-500">SHA-256 encrypted authentication</p>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 leading-relaxed font-normal">
+              Private access token for requesting your complete credential archive via backend server code.
+            </p>
+
             {apiKey ? (
               <div className="space-y-3">
-                <div className="flex items-center border-2 border-border bg-background p-3 rounded-none gap-2">
-                  <span className="font-mono text-xs select-all truncate flex-1 font-bold">
-                    {showKey ? apiKey : "••••••••••••••••••••••••••••••••••••"}
+                <div className="flex items-center bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl gap-2 font-mono text-xs">
+                  <span className="select-all truncate flex-1 font-semibold text-slate-800 dark:text-slate-200">
+                    {showKey ? apiKey : "cv_••••••••••••••••••••••••••••••••••••"}
                   </span>
-                  <button onClick={() => setShowKey(!showKey)} className="p-1 hover:text-accent transition-colors">
+                  <button
+                    onClick={() => setShowKey(!showKey)}
+                    className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                    title={showKey ? "Hide key" : "Show key"}
+                  >
                     {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
-                  <button onClick={() => copyToClipboard(apiKey, setCopiedKey)} className="p-1 hover:text-accent transition-colors">
+                  <button
+                    onClick={() => copyToClipboard(apiKey, setCopiedKey)}
+                    className="p-1 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
+                    title="Copy key"
+                  >
                     {copiedKey ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={handleGenerateKey} disabled={keyLoading} className="w-1/2 border-2 border-border py-2 text-[10px] font-bold uppercase hover:bg-secondary cursor-pointer bg-background flex items-center justify-center gap-1.5">
-                    <RefreshCw className="w-3.5 h-3.5" /> RE-GENERATE
-                  </button>
-                  <button onClick={handleRevokeKey} disabled={keyLoading} className="w-1/2 border-2 border-border hover:border-destructive hover:bg-destructive/10 text-destructive py-2 text-[10px] font-bold uppercase cursor-pointer bg-background">
-                    REVOKE KEY
-                  </button>
+
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    onClick={handleGenerateKey}
+                    disabled={keyLoading}
+                    className="flex-1 gap-1.5 text-xs font-medium"
+                  >
+                    <RefreshCw className="w-3 h-3" /> Re-generate
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="xs"
+                    onClick={handleRevokeKey}
+                    disabled={keyLoading}
+                    className="flex-1 text-xs font-medium"
+                  >
+                    Revoke Token
+                  </Button>
                 </div>
               </div>
             ) : (
-              <button onClick={handleGenerateKey} disabled={keyLoading} className="w-full brutalist-button text-[10px] py-3 cursor-pointer">
-                {keyLoading ? "Generating..." : "GENERATE DEVELOPER API KEY"}
-              </button>
+              <Button
+                onClick={handleGenerateKey}
+                disabled={keyLoading}
+                size="sm"
+                className="w-full font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+              >
+                {keyLoading ? "Generating Token..." : "Generate Developer API Token"}
+              </Button>
             )}
           </div>
-        </div>
 
-        {/* Public Endpoint Panel */}
-        <div className="bg-card border-2 border-border p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(242,239,233,1)]">
-          <p className="text-xs font-bold uppercase tracking-widest text-accent mb-2">PUBLIC ENDPOINT</p>
-          <h2 className="text-2xl font-black uppercase tracking-tight mb-4">JSON Integration</h2>
-          
-          <form onSubmit={handleSaveSettings} className="space-y-5">
-            {settingsMessage && (
-              <div className="text-xs font-bold uppercase text-accent bg-accent/5 p-3 border-2 border-accent/20 rounded-none">
-                {settingsMessage}
-              </div>
-            )}
-            
+          {/* Public Portfolio Feed Panel */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-2xs space-y-5">
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="isPublic"
-                checked={isPublic}
-                onChange={(e) => setIsPublic(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary accent-primary cursor-pointer"
-              />
-              <Label htmlFor="isPublic" className="font-bold cursor-pointer uppercase text-xs tracking-wider">Enable Public Portfolio Endpoint</Label>
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-200 dark:border-emerald-800">
+                <Globe className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                  Public JSON Portfolio Feed
+                </h2>
+                <p className="text-[11px] text-slate-500">CORS-enabled frontend endpoint</p>
+              </div>
             </div>
 
-            {isPublic && (
-              <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-                <Label htmlFor="slug" className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Custom Endpoint Slug</Label>
-                <div className="flex items-center border-2 border-border overflow-hidden bg-background">
-                  <span className="bg-muted px-3 py-2 text-[10px] text-muted-foreground border-r border-border font-bold uppercase">
-                    /api/v1/vault/
-                  </span>
-                  <Input
-                    id="slug"
-                    value={slug}
-                    onChange={(e) => setSlug(e.target.value)}
-                    className="border-0 focus-visible:ring-0 rounded-none shadow-none h-9 px-3 text-xs"
-                    required={isPublic}
-                  />
-                </div>
-                <div className="pt-2 flex items-center justify-between text-[10px] text-muted-foreground font-semibold">
-                  <span className="truncate max-w-[280px]">Endpoint: {publicEndpointUrl}</span>
-                  <button type="button" onClick={() => copyToClipboard(publicEndpointUrl, setCopiedUrl)} className="text-accent font-bold hover:underline ml-2 inline-flex items-center gap-1 shrink-0">
-                    {copiedUrl ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />} COPY URL
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <button type="submit" disabled={settingsLoading} className="brutalist-button text-[10px] py-3 px-6 cursor-pointer">
-              {settingsLoading ? "Saving..." : "SAVE INTEGRATION SETTINGS"}
-            </button>
-          </form>
-        </div>
-
-      </div>
-
-      {/* Right Column: Code Documentation */}
-      <div className="lg:col-span-7">
-        <div className="bg-card border-2 border-border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(242,239,233,1)] flex flex-col h-full overflow-hidden">
-          
-          <div className="border-b-2 border-border bg-muted/30 p-5 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-            <h3 className="text-sm font-black tracking-tight uppercase flex items-center gap-2">
-              <FileCode className="w-4 h-4 text-accent" /> API INTEGRATION DOCS
-            </h3>
-            
-            {/* Tabs */}
-            <div className="flex border-2 border-border rounded-none overflow-hidden bg-background max-w-fit text-[10px] font-bold">
-              {[
-                { id: "curl", label: "cURL" },
-                { id: "javascript", label: "JS" },
-                { id: "python", label: "Python" },
-                { id: "public", label: "Public Feed" },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 py-1.5 uppercase transition-colors cursor-pointer border-r border-border last:border-0 ${
-                    activeTab === tab.id ? "bg-foreground text-background" : "hover:bg-secondary"
+            <form onSubmit={handleSaveSettings} className="space-y-4">
+              {settingsMessage && (
+                <div
+                  className={`p-3 text-xs rounded-xl font-medium border ${
+                    settingsMessage.type === "success"
+                      ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/60"
+                      : "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900/60"
                   }`}
                 >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
+                  {settingsMessage.text}
+                </div>
+              )}
 
-          <div className="flex-1 bg-[#18181c] p-6 text-[#f5f5f7] font-mono text-xs relative select-all flex flex-col justify-between overflow-x-auto min-h-[400px]">
-            <pre className="whitespace-pre">{docSnippets[activeTab as keyof typeof docSnippets]}</pre>
-            <div className="pt-6 border-t border-white/10 mt-6 flex justify-between items-center text-[10px] text-white/50 select-none">
-              <span>Endpoint method: GET</span>
-              <button
-                onClick={() => copyToClipboard(docSnippets[activeTab as keyof typeof docSnippets], () => {})}
-                className="text-white hover:text-white/80 transition-colors uppercase font-bold tracking-wider cursor-pointer"
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
+                <input
+                  type="checkbox"
+                  id="isPublic"
+                  checked={isPublic}
+                  onChange={(e) => setIsPublic(e.target.checked)}
+                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 accent-blue-600 cursor-pointer"
+                />
+                <Label htmlFor="isPublic" className="font-semibold text-xs text-slate-900 dark:text-slate-100 cursor-pointer">
+                  Enable Public Portfolio Feed
+                </Label>
+              </div>
+
+              {isPublic && (
+                <div className="space-y-2 animate-fade-in-up">
+                  <Label htmlFor="slug" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Custom Slug Identifier
+                  </Label>
+                  <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-800/60 focus-within:ring-2 focus-within:ring-blue-500">
+                    <span className="px-3 py-2 text-xs text-slate-500 border-r border-slate-200 dark:border-slate-700 font-mono bg-slate-100/80 dark:bg-slate-800 select-none">
+                      /api/v1/vault/
+                    </span>
+                    <Input
+                      id="slug"
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
+                      placeholder="your-name"
+                      className="border-0 shadow-none focus-visible:ring-0 rounded-none h-9 text-xs font-mono"
+                      required={isPublic}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                    <span className="truncate max-w-[260px] font-mono">{publicEndpointUrl}</span>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(publicEndpointUrl, setCopiedUrl)}
+                      className="text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center gap-1 cursor-pointer shrink-0 ml-2"
+                    >
+                      {copiedUrl ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                      {copiedUrl ? "Copied" : "Copy URL"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                disabled={settingsLoading}
+                size="sm"
+                className="w-full font-medium"
               >
-                Copy Snippet
-              </button>
+                {settingsLoading ? "Saving..." : "Save Feed Settings"}
+              </Button>
+            </form>
+          </div>
+
+        </div>
+
+        {/* Right Column: Code Documentation & Playground (7 cols) */}
+        <div className="lg:col-span-7 space-y-6">
+          
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-2xs overflow-hidden flex flex-col h-full">
+            
+            {/* Header with Tabs */}
+            <div className="bg-slate-50 dark:bg-slate-800/60 p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <h3 className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                  Integration Code Snippets
+                </h3>
+              </div>
+
+              {/* Language Switcher */}
+              <div className="flex bg-slate-200/80 dark:bg-slate-950 p-0.5 rounded-lg text-xs font-medium">
+                {[
+                  { id: "curl", label: "cURL" },
+                  { id: "javascript", label: "JavaScript" },
+                  { id: "python", label: "Python" },
+                  { id: "public", label: "Public Feed" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                      activeTab === tab.id
+                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Code Block Content */}
+            <div className="flex-1 bg-slate-950 p-5 text-slate-200 font-mono text-xs relative flex flex-col justify-between overflow-x-auto min-h-[340px]">
+              <pre className="leading-relaxed whitespace-pre text-[12px] text-slate-300">
+                {docSnippets[activeTab]}
+              </pre>
+
+              <div className="pt-4 border-t border-slate-800/80 mt-6 flex justify-between items-center text-[11px] text-slate-400">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  Method: GET · Format: JSON
+                </span>
+                <button
+                  onClick={() => copyToClipboard(docSnippets[activeTab], setCopiedSnippet)}
+                  className="flex items-center gap-1 text-slate-300 hover:text-white px-2.5 py-1 rounded bg-slate-800/80 hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  {copiedSnippet ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedSnippet ? "Copied" : "Copy Snippet"}
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Bottom Full-Width Reference Card */}
+        <div className="lg:col-span-12 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xs space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              API Reference & Endpoint Specification
+            </h2>
+            <p className="text-xs text-slate-500">
+              Technical rules and headers for requesting your credential vault
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+            <div className="space-y-2.5 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                <Key className="w-3.5 h-3.5 text-blue-600" /> Private Authenticated Endpoint
+              </h3>
+              <p className="text-slate-500 leading-relaxed">
+                Send a <code className="font-mono bg-slate-200/80 dark:bg-slate-700 px-1 py-0.5 rounded">GET</code> request to <code className="font-mono bg-slate-200/80 dark:bg-slate-700 px-1 py-0.5 rounded">/api/v1/certificates</code> with the header <code className="font-mono bg-slate-200/80 dark:bg-slate-700 px-1 py-0.5 rounded">X-CertVault-API-Key</code>. Returns your complete vault. Keep your private key on server-side nodes only.
+              </p>
+            </div>
+
+            <div className="space-y-2.5 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-emerald-600" /> Public Portfolio Endpoint
+              </h3>
+              <p className="text-slate-500 leading-relaxed">
+                Send a <code className="font-mono bg-slate-200/80 dark:bg-slate-700 px-1 py-0.5 rounded">GET</code> request to <code className="font-mono bg-slate-200/80 dark:bg-slate-700 px-1 py-0.5 rounded">/api/v1/vault/[slug]</code>. Returns only credentials marked as public. Safe for direct client-side (frontend) portfolio code.
+              </p>
             </div>
           </div>
-
-        </div>
-      </div>
-
-      {/* Full Width Documentation Section */}
-      <div className="lg:col-span-12 bg-card border-2 border-border p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(242,239,233,1)] space-y-8">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-accent mb-2">DEVELOPER MANUAL</p>
-          <h2 className="text-3xl font-black uppercase tracking-tight">API Integration Reference</h2>
-          <p className="text-xs text-muted-foreground leading-relaxed font-semibold mt-1">
-            Read the specifications to integrate your CertVault credentials onto custom external sites.
-          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t-2 border-border">
-          {/* Section 1: Authentication */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-black uppercase text-foreground flex items-center gap-2">
-              <span className="w-5 h-5 rounded-none border border-border bg-foreground text-background flex items-center justify-center text-[10px] font-bold">1</span>
-              Private Authenticated Requests
-            </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-              To fetch your entire credential vault, perform a <code className="bg-muted px-1.5 py-0.5 border border-border select-all font-bold">GET</code> request to the certificates endpoint. Secure your request by including your private token as an HTTP header:
-            </p>
-            <div className="bg-[#18181c] p-3 text-[#f5f5f7] rounded-none font-mono text-[10px] select-all border border-border">
-              X-CertVault-API-Key: cv_YOUR_PRIVATE_TOKEN
-            </div>
-            <p className="text-xs text-muted-foreground font-semibold">
-              Warning: Do not expose this key inside client-side (frontend) code. Request this endpoint only from backend server-side nodes (e.g. API routers, server actions, or secure clouds).
-            </p>
-          </div>
-
-          {/* Section 2: Public API Feed */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-black uppercase text-foreground flex items-center gap-2">
-              <span className="w-5 h-5 rounded-none border border-border bg-foreground text-background flex items-center justify-center text-[10px] font-bold">2</span>
-              Public Portfolio Feed
-            </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-              If you wish to fetch your credentials directly from a frontend application (e.g. Next.js static props, React app, or Jekyll portfolio), enable the <span className="font-bold text-foreground">Public Feed</span> and configure a custom slug.
-            </p>
-            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-              This endpoint requires no authentication headers and queries only credentials flagged as <span className="font-bold text-foreground">public</span> in your vault. Secure for CORS-enabled direct queries.
-            </p>
-          </div>
-        </div>
-
-        {/* Section 3: Response Schema */}
-        <div className="pt-6 border-t-2 border-border space-y-3">
-          <h3 className="text-sm font-black uppercase text-foreground">Response Schema</h3>
-          <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-            Both endpoints return a structured JSON payload containing metadata and public document storage access endpoints:
-          </p>
-          <div className="bg-[#18181c] p-4 text-[#f5f5f7] rounded-none font-mono text-[10px] overflow-x-auto border border-border">
-{`{
-  "success": true,
-  "owner": "Jane Doe",
-  "certificates": [
-    {
-      "id": "clxyz123...",
-      "title": "AWS Certified Solutions Architect",
-      "issuer": "Amazon Web Services",
-      "issueDate": "2026-07-14T00:00:00.000Z",
-      "expirationDate": "2029-07-14T00:00:00.000Z",
-      "credentialId": "AWS-ASA-994",
-      "credentialUrl": "https://aws.amazon.com/verify/...",
-      "verified": true,
-      "fileUrl": "/uploads/1720970000-cert.pdf",
-      "isPublic": true
-    }
-  ]
-}`}
-          </div>
-        </div>
       </div>
 
     </div>

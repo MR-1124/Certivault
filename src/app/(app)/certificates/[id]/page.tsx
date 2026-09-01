@@ -35,7 +35,12 @@ export default async function CertificateDetailsPage({
     } else {
       const lowerUrl = cert.fileUrl.toLowerCase();
       isPdf = lowerUrl.endsWith(".pdf");
-      isImage = lowerUrl.endsWith(".png") || lowerUrl.endsWith(".jpg") || lowerUrl.endsWith(".jpeg") || lowerUrl.endsWith(".webp") || lowerUrl.endsWith(".gif");
+      isImage =
+        lowerUrl.endsWith(".png") ||
+        lowerUrl.endsWith(".jpg") ||
+        lowerUrl.endsWith(".jpeg") ||
+        lowerUrl.endsWith(".webp") ||
+        lowerUrl.endsWith(".gif");
     }
   }
 
@@ -43,8 +48,8 @@ export default async function CertificateDetailsPage({
     id: cert.id,
     title: cert.title,
     issuer: cert.issuer,
-    issueDate: cert.issueDate.toLocaleDateString(),
-    expirationDate: cert.expirationDate ? cert.expirationDate.toLocaleDateString() : null,
+    issueDate: cert.issueDate.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }),
+    expirationDate: cert.expirationDate ? cert.expirationDate.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : null,
     credentialId: cert.credentialId,
     credentialUrl: cert.credentialUrl,
     isPublic: cert.isPublic,
@@ -56,8 +61,11 @@ export default async function CertificateDetailsPage({
 
   return (
     <div className="space-y-6">
-      <Link href="/certificates" className="inline-flex items-center text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
-        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Certificates
+      <Link
+        href="/certificates"
+        className="inline-flex items-center text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors gap-1.5"
+      >
+        <ArrowLeft className="w-4 h-4" /> Back to Vault
       </Link>
 
       <DetailsPageAnimations cert={details} />

@@ -1,47 +1,67 @@
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Shield } from "lucide-react";
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans relative p-6 sm:p-12 md:p-24 max-w-4xl mx-auto space-y-12 animate-fade-in-up">
-      <Link href="/" className="inline-flex items-center text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-primary transition-colors mb-6">
-        <ArrowLeft className="w-4 h-4 mr-2" /> Back to Home
+    <div className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-8 animate-fade-in-up">
+      <Link
+        href="/"
+        className="inline-flex items-center text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors gap-1.5"
+      >
+        <ArrowLeft className="w-4 h-4" /> Back to Home
       </Link>
 
-      <div className="border-b-4 border-foreground pb-6">
-        <p className="text-xs font-bold uppercase tracking-widest text-accent mb-2">LEGAL COMPLIANCE</p>
-        <h1 className="text-5xl sm:text-6xl font-black uppercase tracking-tight">Privacy Policy</h1>
-        <p className="text-xs text-muted-foreground font-semibold uppercase mt-2">Last Updated: July 14, 2026</p>
-      </div>
-
-      <div className="space-y-8 text-xs font-semibold text-muted-foreground leading-relaxed uppercase tracking-wider">
-        <section className="space-y-3">
-          <h2 className="text-lg font-black text-foreground">1. Data Collection</h2>
-          <p>
-            CertVault collects email addresses, secure credential records, and uploaded document attachments (PDFs and images) solely to perform the credential storage, verification, and API showcase services.
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 sm:p-10 shadow-2xs space-y-8">
+        <div className="border-b border-slate-100 dark:border-slate-800 pb-6 space-y-2">
+          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-xs font-semibold">
+            <Shield className="w-4 h-4" />
+            <span>Legal & Privacy Compliance</span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            Privacy Policy
+          </h1>
+          <p className="text-xs text-slate-500 font-mono">
+            Last Updated: July 2026
           </p>
-        </section>
+        </div>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-black text-foreground">2. API and Public Feeds</h2>
-          <p>
-            When you activate the Public Feed toggle on your integration dashboard, any certificates flagged as "public" become queryable by anonymous network clients. Your private API credentials and hashed keys are strictly guarded and never exposed.
-          </p>
-        </section>
+        <div className="space-y-6 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          <section className="space-y-2">
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              1. Information We Collect
+            </h2>
+            <p>
+              CertVault collects your name, email address, password hashes, certificate metadata (issuers, dates, credential identifiers, verification links), and uploaded document files solely to deliver credential vault, renewal monitoring, and developer API services.
+            </p>
+          </section>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-black text-foreground">3. Document Storage</h2>
-          <p>
-            Uploaded certificate files are saved to secure directory blocks on Vercel storage or local volumes. Access tokens protect authenticated document links.
-          </p>
-        </section>
+          <section className="space-y-2">
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              2. Developer API & Public Feeds
+            </h2>
+            <p>
+              When you enable the Public Portfolio Feed on your settings dashboard, any certifications marked as public are queryable by anonymous network clients. Your private API access tokens and database credentials are cryptographic SHA-256 hashes and are never exposed publicly.
+            </p>
+          </section>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-black text-foreground">4. Cookies and Security</h2>
-          <p>
-            We deploy secure cookies to persist user sessions via NextAuth. Rate limiting middleware active on API nodes resolves request rates by tracking incoming client IPs anonymously.
-          </p>
-        </section>
+          <section className="space-y-2">
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              3. Document & Media Storage
+            </h2>
+            <p>
+              Uploaded certificates are stored as Base64 data within encrypted database records. Uploaded files are restricted to standard image formats and PDF documents under 4.5MB.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              4. Cookies & Security
+            </h2>
+            <p>
+              We deploy HTTP-only cookies to persist user sessions via NextAuth. Edge proxy nodes enforce IP-based rate limiting (maximum 100 requests per minute) to defend endpoints against abuse.
+            </p>
+          </section>
+        </div>
       </div>
     </div>
   );

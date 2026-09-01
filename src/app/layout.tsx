@@ -1,29 +1,25 @@
 import type { Metadata } from "next";
-import { Syne, Playfair_Display, Space_Grotesk } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
-const syne = Syne({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-syne",
+  variable: "--font-sans",
   display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const playfair = Playfair_Display({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-playfair",
+  variable: "--font-mono",
   display: "swap",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space",
-  display: "swap",
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "CertVault | Secure Editorial Credential Vault",
-  description: "A secure, bold, editorial-grade showcase for your professional certifications.",
+  title: "CertVault | Personal Credential Hub & Developer API",
+  description: "Securely manage, verify, and expose your professional certifications via custom developer REST APIs.",
 };
 
 export default function RootLayout({
@@ -34,12 +30,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${playfair.variable} ${spaceGrotesk.variable} font-sans h-full antialiased`}
+      className={`${plusJakarta.variable} ${jetbrainsMono.variable} font-sans h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col relative bg-background text-foreground selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
-        {/* Animated Noise Grain Overlay */}
-        <div className="fixed inset-0 pointer-events-none opacity-[0.035] dark:opacity-[0.05] z-50 noise-bg" />
-        
+      <body className="min-h-full flex flex-col relative bg-background text-foreground selection:bg-slate-900 selection:text-white dark:selection:bg-slate-100 dark:selection:text-slate-900">
         <Providers>
           {children}
         </Providers>
